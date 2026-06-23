@@ -17,6 +17,12 @@ const PORT = process.env.PORT || 3000;
  * 4. Llama a next().
  */
 // Tu código aquí
+app.use((req, res, next) => {
+    req.db = client.db('MundialDB');
+    req.collection = req.db.collection('equipos');
+    next();
+});
+
 
 /**
  * TODO: Implementar un endpoint GET /equipos
@@ -26,7 +32,18 @@ const PORT = process.env.PORT || 3000;
  * IMPORTANTE: Recuerda que las consultas a MongoDB son asincrónicas.
  */
 app.get('/equipos', async (req, res) => {
-    // Tu código aquí
+    // Tu código aqui
+    try {
+        // Buscamos todos los documentos de la colección
+        const equipos = await req.collection.find().toArray();
+        
+        // Retornamos el arreglo con status 200
+        res.status(200).json(equipos);
+    } catch (error) {
+        console.error("Error al obtener los equipos:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+
 });
 
 /**
@@ -39,6 +56,28 @@ app.get('/equipos', async (req, res) => {
  */
 app.get('/equipos/buscar', async (req, res) => {
     // Tu código aquí
+    try {
+        // 1. Obtenemos el parámetro de consulta 'tecnico'
+        const tecnicoBuscado = req.query.tecnico;
+
+        // Validamos si el usuario envió el parámetro en la URL
+        if (!tecnicoBuscado) {
+            return res.status(400).json({ error: "Falta el parámetro de búsqueda 'tecnico'" });
+        }
+
+        const equiposFiltrados = await req.collection.find({
+            tecnico: { 
+                $regex: tecnicoBuscado, 
+                $options: 'i' // 'i' hace que ignore mayúsculas/minúsculas
+            }
+        }).toArray();
+
+        // 3. Retornamos el arreglo filtrado con status 200
+        res.status(200).json(equiposFiltrados);
+    } catch (error) {
+        console.error("Error al buscar equipos:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
 });
 
 /**
@@ -52,6 +91,31 @@ app.get('/equipos/buscar', async (req, res) => {
  */
 app.get('/equipos/:id', async (req, res) => {
     // Tu código aquí
+    try {
+        // 1. Obtener el id de los parámetros de la URL
+        const idParam = req.params.id;
+
+        // 2. Validar si el id es un ObjectId válido
+        if (!ObjectId.isValid(idParam)) {
+            return res.status(400).json({ error: "ID inválido" });
+        }
+
+        // 3. Convertir el parámetro de texto a una instancia de ObjectId y buscar el documento
+        const equipo = await req.collection.findOne({ _id: new ObjectId(idParam) });
+
+        // 4. Si el equipo existe, lo retornamos con status 200
+        if (equipo) {
+            return res.status(200).json(equipo);
+        }
+
+        // 5. Si no se encuentra, retornamos status 404
+        res.status(404).json({ error: "Equipo no encontrado" });
+
+    } catch (error) {
+        console.error("Error al obtener el equipo por ID:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+
 });
 
 
