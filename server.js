@@ -91,6 +91,31 @@ app.get('/equipos/buscar', async (req, res) => {
  */
 app.get('/equipos/:id', async (req, res) => {
     // Tu código aquí
+    try {
+        // 1. Obtener el id de los parámetros de la URL
+        const idParam = req.params.id;
+
+        // 2. Validar si el id es un ObjectId válido
+        if (!ObjectId.isValid(idParam)) {
+            return res.status(400).json({ error: "ID inválido" });
+        }
+
+        // 3. Convertir el parámetro de texto a una instancia de ObjectId y buscar el documento
+        const equipo = await req.collection.findOne({ _id: new ObjectId(idParam) });
+
+        // 4. Si el equipo existe, lo retornamos con status 200
+        if (equipo) {
+            return res.status(200).json(equipo);
+        }
+
+        // 5. Si no se encuentra, retornamos status 404
+        res.status(404).json({ error: "Equipo no encontrado" });
+
+    } catch (error) {
+        console.error("Error al obtener el equipo por ID:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+
 });
 
 

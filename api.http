@@ -8,7 +8,7 @@ GET {{baseUrl}}/equipos
 GET {{baseUrl}}/equipos/buscar?tecnico=lionel
 
 ### Obtener un equipo por ID (Asegúrate de reemplazar <TU_ID> por un ObjectId válido de tu base)
-GET {{baseUrl}}/equipos/<TU_ID>
+GET {{baseUrl}}/equipos/6a28ab3f3d3ab0891adaa7c8
 
 ### Obtener un equipo por ID inexistente
 GET {{baseUrl}}/equipos/66e01a1d1234567890abcdef
